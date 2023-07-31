@@ -1,0 +1,16 @@
+name: Sync To Gitee
+
+on:
+  schedule: {[corn: 0 * * * *]}
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync to Gitee
+        uses: wearerequired/git-mirror-action@master
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.GITEE_PRIVATE_KEY }}
+        with:
+          source-repo: "git@github.com:CoolPlayLin/policy-work-team.git"
+          destination-repo: "git@gitee.com:CoolPlayLin/policy-work-team"
