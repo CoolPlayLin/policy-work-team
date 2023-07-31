@@ -14,7 +14,7 @@ jobs:
             const labels = context.payload.pull_request.labels.map(function(obj) {
                 return obj.name
               })
-            if (context.payload.pull_request.title.indexOf('Block') != -1 || context.payload.pull_request.title.indexOf('block') != -1 || labels.includes('blocking-issue')){
+            if (labels.includes("Policy-Rejected") || labels.includes('Blocking-issue') || labels.includes("Do-Not-Merge")){
               const error = Error("Blocking keyword was included. We've prevented this PR.")
               throw error
             } else {
