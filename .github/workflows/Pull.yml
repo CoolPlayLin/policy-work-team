@@ -1,0 +1,22 @@
+name: CI
+on:
+  pull_request:
+    types: [opened, edited, reopened, labeled, unlabeled, synchronize]
+
+jobs:
+  block:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Blocker
+        uses: actions/github-script@v6.4.1
+        with:
+          script: |
+            const labels = context.payload.pull_request.labels.map(function(obj) {
+                return obj.name
+              })
+            if (labels.includes("Policy-Rejected") || labels.includes('Blocking-issue') || labels.includes("Do-Not-Merge")){
+              const error = Error("Blocking keyword was included. We've prevented this PR.")
+              throw error
+            } else {
+              console.log("Blocking keyword wasn't included.")
+            }
