@@ -9,7 +9,7 @@
 - [CoolPlayLin](https://github.com/CoolPlayLin)
 - [书迷](https://github.com/jsrcode)
 
-副管理员
+联合管理员
 
 - [刘lyxAndy](https://github.com/liulyxandy-codemao)
 
