@@ -17,3 +17,4 @@
 
 - [静静看着星空](https://github.com/quiet-star-gazing)
 - [旁观者](https://github.com/pangguanzhejers)
+- [弃稞之草](https://github.com/QiKeZhiCao)
