@@ -16,4 +16,4 @@ jobs:
       with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           teams: member
-          numOfAssignee: 1
+          removePreviousAssignees: true
