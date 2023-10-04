@@ -17,7 +17,7 @@ jobs:
             api.rest.issues.removeLabel({
                 repo: context.repo.repo,
                 owner: context.repo.owner,
-                issue_number: context.issue.number
+                issue_number: context.issue.number,
                 name: ["Member-Approved", "Administrator-Approved"]
             })
       - name: Add labels when approve
