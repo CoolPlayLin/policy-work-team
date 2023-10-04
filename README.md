@@ -12,7 +12,7 @@
 联合管理员
 
 - [刘lyxAndy](https://github.com/liulyxandy-codemao)
-- [我要恰大米！]()
+- [我要恰大米！](https://github.com/fufu3939)
 
 成员
 
