@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Remove label when dismiss
         if: github.event.review.state == 'dismissed'
-        uses: actions/github-script@v2.1.0
+        uses: actions/github-script@v6.4.1
         with:
           script: |
             api.rest.issues.removeLabel({
@@ -22,7 +22,7 @@ jobs:
             })
       - name: Add labels when approve
         if: github.event.review.state == 'approved'
-        uses: actions/github-script@v2.1.0
+        uses: actions/github-script@v6.4.1
         with:
           script: |
             const members = ["CHEN-EXE", "DIAG5", "fufu3939", "pangguanzhejers", "QiKeZhiCao", "quiet-star-gazing", "svipwing"]
