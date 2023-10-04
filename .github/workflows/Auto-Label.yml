@@ -13,6 +13,7 @@ jobs:
         if: github.event.review.state == 'dismissed'
         uses: actions/github-script@v6.4.1
         with:
+          github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             github.rest.issues.removeLabel({
                 repo: context.repo.repo,
@@ -24,6 +25,7 @@ jobs:
         if: github.event.review.state == 'approved'
         uses: actions/github-script@v6.4.1
         with:
+          github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             const members = ["CHEN-EXE", "DIAG5", "fufu3939", "pangguanzhejers", "QiKeZhiCao", "quiet-star-gazing", "svipwing"]
             const administrator = ["CoolPlayLin", "liulyxandy-codemao", "jsrcode", "fufu3939", "coolplaylinbot"]
