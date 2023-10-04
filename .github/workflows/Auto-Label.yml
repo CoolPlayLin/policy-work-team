@@ -6,13 +6,13 @@ jobs:
   label:
     permissions:
       pull-requests: write
+      issues: write
     runs-on: ubuntu-latest
     steps:
       - name: Remove label when dismiss
         if: github.event.review.state == 'dismissed'
         uses: actions/github-script@v2.1.0
         with:
-          github-token: ${{ secrets.BOT }}
           script: |
             api.rest.issues.removeLabel({
                 repo: context.repo.repo,
@@ -24,7 +24,6 @@ jobs:
         if: github.event.review.state == 'approved'
         uses: actions/github-script@v2.1.0
         with:
-          github-token: ${{ secrets.BOT }}
           script: |
             const members = ["CHEN-EXE", "DIAG5", "fufu3939", "pangguanzhejers", "QiKeZhiCao", "quiet-star-gazing", "svipwing"]
             const administrator = ["CoolPlayLin", "liulyxandy-codemao", "jsrcode", "fufu3939", "coolplaylinbot"]
