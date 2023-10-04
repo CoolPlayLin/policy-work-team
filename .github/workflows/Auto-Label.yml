@@ -1,0 +1,45 @@
+name: Auto Labeler
+on:
+  pull_request_review:
+    types: [submitted, dismissed]
+jobs:
+  label:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove label when dismiss
+        if: github.event.review.state == 'dismissed'
+        uses: actions/github-script@v2.1.0
+        with:
+          github-token: ${{ secrets.BOT }}
+          script: |
+            api.rest.issues.removeLabel({
+                repo: context.repo.repo,
+                owner: context.repo.owner,
+                issue_number: context.issue.number
+                name: ["Member-Approved", "Administrator-Approved"]
+            })
+      - name: Add labels when approve
+        if: github.event.review.state == 'approved'
+        uses: actions/github-script@v2.1.0
+        with:
+          github-token: ${{ secrets.BOT }}
+          script: |
+            const members = ["CHEN-EXE", "DIAG5", "fufu3939", "pangguanzhejers", "QiKeZhiCao", "quiet-star-gazing", "svipwing"]
+            const administrator = ["CoolPlayLin", "liulyxandy-codemao", "jsrcode", "fufu3939", "coolplaylinbot"]
+            if (members.includes("${{ github.event.review.user.login }}")) {
+                github.rest.issues.addLabels({
+                repo: context.repo.repo,
+                owner: context.repo.owner,
+                issue_number: context.issue.number,
+                labels: ["Member-Approved"]
+                })
+            } else if (administrator.includes("${{ github.event.review.user.login }}")) {
+                github.rest.issues.addLabels({
+                repo: context.repo.repo,
+                owner: context.repo.owner,
+                issue_number: context.issue.number,
+                labels: ["Administrator-Approved"]
+                })
+            }
