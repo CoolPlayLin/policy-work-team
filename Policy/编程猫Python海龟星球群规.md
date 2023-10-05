@@ -68,13 +68,17 @@
 
 负责对编辑器群聊进行管理，平时帮助官方进行社群管理，有权批准群规委员会命令部的请求，填写处罚记录表与维护良好社群氛围，具有 Owner 权限
 
-目前成员：CoolPlayLin(@CoolPlayLin) 书迷(@jsrcode)
+目前成员：
+1. CoolPlayLin(@CoolPlayLin)
+2. 书迷(@jsrcode)
 
 - 联合管理员
 
 负责与管理员协助管理群聊，无权直接管理群，有权批准群规委员会命令部的请求，对群规进行投票，有权批准群规委员会群规的请求，具有 Maintainer 权限
 
-目前成员：刘lyxAndy(@liulyxandy-codemao)
+目前成员：
+1. 刘lyxAndy(@liulyxandy-codemao)
+2. 我要恰大米！(@fufu3939)
 
 限制：此身份需为其他编程猫群管理员
 
@@ -82,7 +86,13 @@
 
 负责对群规进行审核，对群规进行投票，有权批准群规委员会群规的请求，对群规进行修改，具有 Write 权限
 
-目前成员：旁观者JErS(@pangguanzhejers) 静静地看星空Start(@quiet-star-gazing) 弃稞之草(@QiKeZhiCao)
+目前成员：
+1. 旁观者JErS(@pangguanzhejers)
+2. 静静地看星空Start(@quiet-star-gazing)
+3. 弃稞之草(@QiKeZhiCao)
+4. 点点(@DIAG5)
+5. 我要玩崩铁！(@CHEN-EXE)
+6. 技术云(@svipwing)
 
 ## 附则
 
