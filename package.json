@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "post": "tsx scripts/post.ts"
+    "post": "tsx scripts/post.ts",
+    "test": "tsx scripts/post.spec.ts"
   },
   "keywords": [],
   "author": "",

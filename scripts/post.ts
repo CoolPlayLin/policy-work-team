@@ -6,7 +6,20 @@ const api = new Octokit({
     auth: env.POST_TOKEN
 })
 
-async function pull_request(action: string, repo: string, owner: string, pr_number: number) {
+export async function pull_request_review_comment(action: string, repo: string, owner: string, pr_number: number, comment_id: number) {
+    const labelToRemove: string[] = []
+    const labelToAdd: string[] = []
+    let labels = (await api.rest.issues.listLabelsOnIssue({
+        repo: repo,
+        owner: owner,
+        issue_number: pr_number
+    })).data.map(label => label.name)
+    switch (action) {
+
+    }
+}
+
+export async function pull_request(action: string, repo: string, owner: string, pr_number: number) {
     const labelToRemove: string[] = []
     const labelToAdd: string[] = []
     let labels = (await api.rest.issues.listLabelsOnIssue({
@@ -62,12 +75,14 @@ async function pull_request(action: string, repo: string, owner: string, pr_numb
     }
 
     // Apply Changes
-    await api.rest.issues.addLabels({
-        owner: owner,
-        repo: repo,
-        issue_number: pr_number,
-        labels: labelToAdd
-    })
+    if (labelToAdd.length > 0) {
+        await api.rest.issues.addLabels({
+            owner: owner,
+            repo: repo,
+            issue_number: pr_number,
+            labels: labelToAdd
+        })
+    }
     for (let label of labelToRemove) {
         if (labels.includes(label)) {
             await api.rest.issues.removeLabel({
