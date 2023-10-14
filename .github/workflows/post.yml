@@ -1,6 +1,19 @@
 name: "Post on everything"
 on:
   pull_request_target:
+    types:
+      [
+        ready_for_review,
+        ready_for_review,
+        auto_merge_enabled,
+        opened,
+        reopened,
+        synchronize,
+        closed,
+        edited,
+        review_requested,
+        review_request_removed,
+      ]
   issue_comment:
 
 jobs:
@@ -23,14 +36,14 @@ jobs:
       - name: Get pnpm store directory
         shell: bash
         run: |
-            echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
       - name: Setup pnpm cache
         uses: actions/cache@v3
         with:
-            path: ${{ env.STORE_PATH }}
-            key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-            restore-keys: |
-              ${{ runner.os }}-pnpm-store-
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
       - name: Run post script
         run: pnpm run post
         env:
