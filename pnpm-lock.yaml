@@ -8,6 +8,9 @@ dependencies:
   '@actions/github':
     specifier: ^6.0.0
     version: 6.0.0
+  '@colors/colors':
+    specifier: ^1.6.0
+    version: 1.6.0
   '@octokit/rest':
     specifier: ^20.0.2
     version: 20.0.2
@@ -16,6 +19,9 @@ devDependencies:
   '@types/node':
     specifier: ^20.8.6
     version: 20.8.6
+  prettier:
+    specifier: ^3.0.3
+    version: 3.0.3
   tsx:
     specifier: ^3.13.0
     version: 3.13.0
@@ -39,6 +45,11 @@ packages:
     dependencies:
       tunnel: 0.0.6
       undici: 5.26.3
+    dev: false
+
+  /@colors/colors@1.6.0:
+    resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
+    engines: {node: '>=0.1.90'}
     dev: false
 
   /@esbuild/android-arm64@0.18.20:
@@ -421,6 +432,12 @@ packages:
     dependencies:
       wrappy: 1.0.2
     dev: false
+
+  /prettier@3.0.3:
+    resolution: {integrity: sha512-L/4pUDMxcNa8R/EthV08Zt42WBO4h1rarVtK0K+QJG0X187OLo7l699jWw0GKuwzkPQ//jMFA/8Xm6Fh3J/DAg==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: true
 
   /resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}

@@ -5,17 +5,20 @@
   "main": "index.js",
   "scripts": {
     "post": "tsx scripts/post.ts",
-    "test": "tsx scripts/post.spec.ts"
+    "test": "tsx scripts/post.spec.ts",
+    "format": "prettier --write **/*.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@actions/github": "^6.0.0",
+    "@colors/colors": "^1.6.0",
     "@octokit/rest": "^20.0.2"
   },
   "devDependencies": {
     "@types/node": "^20.8.6",
+    "prettier": "^3.0.3",
     "tsx": "^3.13.0",
     "typescript": "^5.2.2"
   }
