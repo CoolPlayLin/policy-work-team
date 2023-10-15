@@ -90,6 +90,20 @@ export const labels_regex = {
   },
 };
 
+const special_operate = {
+  close: {
+    regex: /[Cc]lose[\s-][Ww]ith[\s-][Rr]eason:/,
+    operate: async (issue_number: number, owner: string, repo: string) => {
+      return await api.rest.issues.update({
+        repo: repo,
+        owner: owner,
+        issue_number: issue_number,
+        state: "closed",
+      });
+    },
+  },
+};
+
 export async function approved(pr_number: number, owner: string, repo: string) {
   const labelToAdd: string[] = [];
   const review = (
@@ -99,7 +113,7 @@ export async function approved(pr_number: number, owner: string, repo: string) {
       pull_number: pr_number,
     })
   ).data;
-  console.log(review)
+  console.log(review);
   review.forEach((obj) => {
     switch (obj.state) {
       case "APPROVED":
@@ -122,6 +136,15 @@ export async function approved(pr_number: number, owner: string, repo: string) {
   }
 }
 
+/**
+ * 
+ * @param action 
+ * @param repo 
+ * @param owner 
+ * @param pr_number 
+ * @param comment_id 
+ * @returns 
+ */
 export async function issue_comment(
   action: string,
   repo: string,
@@ -148,15 +171,20 @@ export async function issue_comment(
   switch (action) {
     case "created":
       // Check regex to add label
-      Object.keys(labels_regex.add).forEach((keys) => {
-        if (body.match(labels_regex.add[keys])) {
-          labelToAdd.push(keys);
+      Object.keys(labels_regex.add).forEach((key) => {
+        if (body.match(labels_regex.add[key])) {
+          labelToAdd.push(key);
         }
       });
-      Object.keys(labels_regex.remove).forEach((keys) => {
-        if (body.match(labels_regex.remove[keys])) {
-          labelToRemove.push(keys);
+      Object.keys(labels_regex.remove).forEach((key) => {
+        if (body.match(labels_regex.remove[key])) {
+          labelToRemove.push(key);
         }
+      Object.values(special_operate).forEach(async (value) => {
+        if (body.match(value.regex as RegExp)) {
+          await value.operate(pr_number, owner, repo)
+        }
+      })
       });
   }
 
@@ -286,8 +314,8 @@ export async function pull_request_target(
       await approved(
         context.payload.pull_request.number,
         context.repo.owner,
-        context.repo.repo
-      )
+        context.repo.repo,
+      );
       break;
     case "issue_comment":
       await issue_comment(

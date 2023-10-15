@@ -13,12 +13,17 @@ on:
         edited,
         review_requested,
         review_request_removed,
+        assigned,
+        unassigned,
+        labeled,
+        unlabeled,
       ]
   issue_comment:
 
 jobs:
   post:
     runs-on: ubuntu-latest
+    if: github.event.sender.login != 'coolplaylinbot'
     steps:
       - name: Checkout
         uses: actions/checkout@v4.1.0
