@@ -86,6 +86,7 @@ export const labels_regex = {
     "Policy-Remove": /\[[Rr]emove\]\s+[Pp]olicy[\s-][Rr]emove/,
     "Policy-Request": /\[[Rr]emove\]\s+[Pp]olicy[\s-][Rr]equest/,
     "Project-File": /\[[Rr]emove\]\s+[Pp]roject[\s-][Ff]ile/,
+    "Review-Needed": /\[[Rr]emove\]\s+[Rr]eview[\s-][Nn]eeded/,
   },
 };
 
@@ -98,9 +99,10 @@ export async function approved(pr_number: number, owner: string, repo: string) {
       pull_number: pr_number,
     })
   ).data;
+  console.log(review)
   review.forEach((obj) => {
     switch (obj.state) {
-      case "approved":
+      case "APPROVED":
         if (Administrator.includes(obj.user.login)) {
           labelToAdd.push("Administrator-Approved");
         } else if (Member.includes(obj.user.login)) {
@@ -120,7 +122,7 @@ export async function approved(pr_number: number, owner: string, repo: string) {
   }
 }
 
-export async function pull_request_review_comment(
+export async function issue_comment(
   action: string,
   repo: string,
   owner: string,
@@ -281,13 +283,18 @@ export async function pull_request_target(
         context.repo.owner,
         context.payload.pull_request.number,
       );
+      await approved(
+        context.payload.pull_request.number,
+        context.repo.owner,
+        context.repo.repo
+      )
       break;
-    case "":
-      await pull_request_review_comment(
+    case "issue_comment":
+      await issue_comment(
         context.payload.action,
         context.repo.repo,
         context.repo.owner,
-        context.payload.pull_request.number,
+        context.payload.pull_request?.number | context.payload.issue?.number,
         context.payload.comment.id,
       );
   }
