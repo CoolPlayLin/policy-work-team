@@ -24,12 +24,19 @@ type Pull_Request_Target =
   | "auto_merge_disabled"
   | "edited";
 
+type Operates = (
+  number: number,
+  owner: string,
+  repo: string,
+  body: Object,
+) => Promise<any>;
+
 interface Special_operate {
   [Key: string]: {
     regex: RegExp;
     conditions: EventName[];
     permission: data.permissions;
-    operate: (number: number, owner: string, repo: string) => Promise<any>;
+    operate: Operates;
   };
 }
 
@@ -42,12 +49,47 @@ const special_operate: Special_operate = {
     regex: /[Cc]lose[\s-][Ww]ith[\s-][Rr]eason:/,
     conditions: ["issue_comment"],
     permission: 0,
-    operate: async (number: number, owner: string, repo: string) => {
+    operate: async (
+      number: number,
+      owner: string,
+      repo: string,
+      body: Object,
+    ) => {
       return await api.rest.issues.update({
         repo: repo,
         owner: owner,
         issue_number: number,
         state: "closed",
+      });
+    },
+  },
+  lock_issue_pr: {
+    regex: /[Ll]ock[\s-][Ww]ith[\s-][Rr]eason:/,
+    conditions: ["issue_comment"],
+    permission: 1,
+    operate: async (
+      number: number,
+      owner: string,
+      repo: string,
+      body: string,
+    ) => {
+      let reason: "off-topic" | "too heated" | "resolved" | "spam";
+      if (body.match(/[Rr]esolved/)) {
+        reason = "resolved";
+      } else if (body.match(/[Oo]ff[\s-][Tt]opic/)) {
+        reason = "off-topic";
+      } else if (body.match(/[Tt]oo[\s-][Hh]eated/)) {
+        reason = "too heated";
+      } else if (body.match(/[Ss]pam/)) {
+        reason = "spam";
+      } else {
+        reason = "resolved";
+      }
+      return await api.rest.issues.lock({
+        repo: repo,
+        owner: owner,
+        issue_number: number,
+        lock_reason: reason,
       });
     },
   },
@@ -91,17 +133,18 @@ export async function issue_comment(
   action: string,
   repo: string,
   owner: string,
-  pr_number: number,
+  number: number,
   comment_id: number,
 ) {
   const labelToRemove: string[] = [];
   const labelToAdd: string[] = [];
+  const Events: string[] = [];
   const eventName = context.eventName as EventName;
   let labels = (
     await api.rest.issues.listLabelsOnIssue({
       repo: repo,
       owner: owner,
-      issue_number: pr_number,
+      issue_number: number,
     })
   ).data.map((label) => label.name);
   let res = (
@@ -156,7 +199,8 @@ export async function issue_comment(
             }
           })
         ) {
-          await value.operate(pr_number, owner, repo);
+          await value.operate(number, owner, repo, res.body);
+          Events.push(`Operate: ${Object.keys(value).toString()} was done`);
         }
       });
   }
@@ -166,24 +210,35 @@ export async function issue_comment(
     await api.rest.issues.addLabels({
       owner: owner,
       repo: repo,
-      issue_number: pr_number,
+      issue_number: number,
       labels: labelToAdd,
     });
+    labelToAdd.forEach((label) => {
+      Events.push(`Labels: ${label} was added`);
+    });
   }
-  for (let label of labelToRemove) {
+  labelToRemove.forEach(async (label) => {
     if (labels.includes(label)) {
       await api.rest.issues.removeLabel({
         owner: owner,
         repo: repo,
-        issue_number: pr_number,
+        issue_number: number,
         name: label,
       });
+      Events.push(`Labels: ${label} was removed`);
+    } else {
+      Events.push(`Labels: ${label} wasn't removed because it hasn't included`);
     }
+  });
+
+  console.log("Post Overview");
+  if (Events.length > 0) {
+    Events.forEach((event) => {
+      console.log(event);
+    });
+  } else {
+    console.log("No events done");
   }
-  return {
-    labelToAdd: labelToAdd,
-    labelToRemove: labelToRemove,
-  };
 }
 
 export async function pull_request_target(
@@ -194,6 +249,7 @@ export async function pull_request_target(
 ) {
   const labelToRemove: string[] = [];
   const labelToAdd: string[] = [];
+  const Events: string[] = [];
   let labels = (
     await api.rest.issues.listLabelsOnIssue({
       repo: repo,
@@ -256,8 +312,11 @@ export async function pull_request_target(
       issue_number: pr_number,
       labels: labelToAdd,
     });
+    labelToAdd.forEach((label) => {
+      Events.push(`Labels: ${label} was added`);
+    });
   }
-  for (let label of labelToRemove) {
+  labelToRemove.forEach(async (label) => {
     if (labels.includes(label)) {
       await api.rest.issues.removeLabel({
         owner: owner,
@@ -265,13 +324,20 @@ export async function pull_request_target(
         issue_number: pr_number,
         name: label,
       });
+      Events.push(`Labels: ${label} was removed`);
+    } else {
+      Events.push(`Labels: ${label} wasn't removed because it hasn't included`);
     }
-  }
+  });
 
-  return {
-    labelToAdd: labelToAdd,
-    labelToRemove: labelToRemove,
-  };
+  console.log("Post Overview");
+  if (Events.length > 0) {
+    Events.forEach((event) => {
+      console.log(event);
+    });
+  } else {
+    console.log("No events done");
+  }
 }
 
 (async () => {

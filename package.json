@@ -6,7 +6,7 @@
   "scripts": {
     "post": "tsx scripts/post.ts",
     "test": "vitest run -u",
-    "format": "prettier --write **/*.ts"
+    "format": "prettier --cache --write **/*.ts"
   },
   "keywords": [],
   "author": "",
