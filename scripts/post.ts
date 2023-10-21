@@ -2,6 +2,24 @@ import { context } from "@actions/github";
 import { Octokit } from "@octokit/rest";
 import { env } from "node:process";
 
+type EventName = "issue_comment" | "pull_request_target"
+type Issue_Comment = "created" | "deleted" | "edited"
+type Pull_Request_Target = "assigned" | "unassigned" | "labeled" | "unlabeled" | "opened" | "closed" | "reopened" | "synchronize" | "converted_to_draft" | "ready_for_review" | "locked" | "unlocked" | "review_requested" | "review_request_removed" | "auto_merge_enabled" | "auto_merge_disabled" | "edited"
+
+interface Label_regex {
+  [Key: string]: {
+    [Key: string]: RegExp;
+  };
+}
+
+interface Special_operate {
+  [Key: string]: {
+    regex: RegExp;
+    conditions: EventName[];
+    operate: (number: number, owner: string, repo: string) => Promise<any>;
+  };
+}
+
 const api = new Octokit({
   auth: env.POST_TOKEN,
 });
@@ -20,7 +38,7 @@ const Member = [
   "DIAG5",
   "CHEN-EXE",
 ];
-export const labels_regex = {
+export const labels_regex: Label_regex = {
   add: {
     //  "Administrator-Approved": '\[[Pp]olicy\]\s+[Aa]dministrator[\s-][Aa]pproved]',
     Announcement: /\[[Pp]olicy\]\s+[Aa]nnouncement/,
@@ -90,14 +108,27 @@ export const labels_regex = {
   },
 };
 
-const special_operate = {
-  close: {
+const special_operate: Special_operate = {
+  close_issue: {
     regex: /[Cc]lose[\s-][Ww]ith[\s-][Rr]eason:/,
-    operate: async (issue_number: number, owner: string, repo: string) => {
+    conditions: ["issue_comment"],
+    operate: async (number: number, owner: string, repo: string) => {
       return await api.rest.issues.update({
         repo: repo,
         owner: owner,
-        issue_number: issue_number,
+        issue_number: number,
+        state: "closed",
+      });
+    },
+  },
+  close_pull_request: {
+    regex: /[Cc]lose[\s-][Ww]ith[\s-][Rr]eason:/,
+    conditions: ["pull_request_target"],
+    operate: async (number: number, owner: string, repo: string) => {
+      return await api.rest.pulls.update({
+        repo: repo,
+        owner: owner,
+        pull_number: number,
         state: "closed",
       });
     },
@@ -136,15 +167,6 @@ export async function approved(pr_number: number, owner: string, repo: string) {
   }
 }
 
-/**
- * 
- * @param action 
- * @param repo 
- * @param owner 
- * @param pr_number 
- * @param comment_id 
- * @returns 
- */
 export async function issue_comment(
   action: string,
   repo: string,
@@ -154,6 +176,7 @@ export async function issue_comment(
 ) {
   const labelToRemove: string[] = [];
   const labelToAdd: string[] = [];
+  const eventName = context.eventName as EventName;
   let labels = (
     await api.rest.issues.listLabelsOnIssue({
       repo: repo,
@@ -168,9 +191,8 @@ export async function issue_comment(
       comment_id: comment_id,
     })
   ).data.body;
-  switch (action) {
+  switch (action as Issue_Comment) {
     case "created":
-      // Check regex to add label
       Object.keys(labels_regex.add).forEach((key) => {
         if (body.match(labels_regex.add[key])) {
           labelToAdd.push(key);
@@ -180,11 +202,11 @@ export async function issue_comment(
         if (body.match(labels_regex.remove[key])) {
           labelToRemove.push(key);
         }
+      });
       Object.values(special_operate).forEach(async (value) => {
-        if (body.match(value.regex as RegExp)) {
-          await value.operate(pr_number, owner, repo)
+        if (body.match(value.regex) && value.conditions.includes(eventName)) {
+          await value.operate(pr_number, owner, repo);
         }
-      })
       });
   }
 
@@ -228,7 +250,7 @@ export async function pull_request_target(
       issue_number: pr_number,
     })
   ).data.map((label) => label.name);
-  switch (action) {
+  switch (action as Pull_Request_Target) {
     case "synchronize":
       labelToRemove.push("Administrator-Approved");
       labelToRemove.push("Member-Approved");
@@ -302,7 +324,7 @@ export async function pull_request_target(
 }
 
 (async () => {
-  const { eventName } = context;
+  const eventName = context.eventName as EventName
   switch (eventName) {
     case "pull_request_target":
       await pull_request_target(
