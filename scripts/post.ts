@@ -1,21 +1,34 @@
 import { context } from "@actions/github";
 import { Octokit } from "@octokit/rest";
 import { env } from "node:process";
+import * as data from "./data";
 
-type EventName = "issue_comment" | "pull_request_target"
-type Issue_Comment = "created" | "deleted" | "edited"
-type Pull_Request_Target = "assigned" | "unassigned" | "labeled" | "unlabeled" | "opened" | "closed" | "reopened" | "synchronize" | "converted_to_draft" | "ready_for_review" | "locked" | "unlocked" | "review_requested" | "review_request_removed" | "auto_merge_enabled" | "auto_merge_disabled" | "edited"
-
-interface Label_regex {
-  [Key: string]: {
-    [Key: string]: RegExp;
-  };
-}
+type EventName = "issue_comment" | "pull_request_target";
+type Issue_Comment = "created" | "deleted" | "edited";
+type Pull_Request_Target =
+  | "assigned"
+  | "unassigned"
+  | "labeled"
+  | "unlabeled"
+  | "opened"
+  | "closed"
+  | "reopened"
+  | "synchronize"
+  | "converted_to_draft"
+  | "ready_for_review"
+  | "locked"
+  | "unlocked"
+  | "review_requested"
+  | "review_request_removed"
+  | "auto_merge_enabled"
+  | "auto_merge_disabled"
+  | "edited";
 
 interface Special_operate {
   [Key: string]: {
     regex: RegExp;
     conditions: EventName[];
+    permission: data.permissions;
     operate: (number: number, owner: string, repo: string) => Promise<any>;
   };
 }
@@ -23,95 +36,12 @@ interface Special_operate {
 const api = new Octokit({
   auth: env.POST_TOKEN,
 });
-const Administrator = [
-  "coolplaylin",
-  "coolplaylinbot",
-  "jsrcode",
-  "liulyxandy-codemao",
-  "fufu3939",
-];
-const Member = [
-  "quiet-star-gazing",
-  "pangguanzhejers",
-  "QiKeZhiCao",
-  "svipwing",
-  "DIAG5",
-  "CHEN-EXE",
-];
-export const labels_regex: Label_regex = {
-  add: {
-    //  "Administrator-Approved": '\[[Pp]olicy\]\s+[Aa]dministrator[\s-][Aa]pproved]',
-    Announcement: /\[[Pp]olicy\]\s+[Aa]nnouncement/,
-    "Blocking-issue": /\[[Pp]olicy\]\s+[bB]locking[\s-][Ii]ssue/,
-    "Breaking-Change": /\[[Pp]olicy\]\s+[Bb]reaking[\s-][Cc]hange/,
-    bug: /\[[Pp]olicy\]\s+[Bb]ug/,
-    "Command-Execute": /\[[Pp]olicy\]\s+[Cc]ommand[\s-][Ee]xecute/,
-    Commissions: /\[[Pp]olicy\]\s+[Cc]ommissions/,
-    "Commissions-Member": /\[[Pp]olicy\]\s+[Cc]ommissions[\s-][Mm]ember/,
-    "Commissions-Policy": /\[[Pp]olicy\]\s+[Cc]ommissions[\s-][Pp]olicy/,
-    dependency: /\[[Pp]olicy\]\s+[Dd]ependenc(y|ies)/,
-    "Do-Not-Merge": /\[[Pp]olicy\]\s+[Dd]o[\s-][Nn]ot[\s-][Mm]erge/,
-    documentation: /\[[Pp]olicy\]\s+[Dd]ocumentation/,
-    duplicate: /\[[Pp]olicy\]\s+[Dd]uplicate/,
-    enhancement: /\[[Pp]olicy\]\s+[Ee]nhancement/,
-    "good first issue": /\[[Pp]olicy\]\s+[Gg]ood[\s-][Ff]irst[\s-][Ii]ssue/,
-    "help wanted": /\[[Pp]olicy\]\s+[Hh]elp[\s-][Ww]anted/,
-    invalid: /\[[Pp]olicy\]\s+[Ii]nvalid/,
-    "Member-Adding": /\[[Pp]olicy\]\s+[Mm]ember[\s-][Aa]dding/,
-    //  "Member-Approved": /\[[Pp]olicy\]\s+/,
-    "Merge-Needed": /\[[Pp]olicy\]\s+[Mm]erge[\s-][Nn]eeded/,
-    "Needs-All-Approval": /\[[Pp]olicy\]\s+[Nn]eeds[\s-][Aa]ll[\s-][Aa]pproval/,
-    "Needs-Author-Feedback":
-      /\[[Pp]olicy\]\s+[Nn]eeds[\s-][Aa]uthor[\s-][Ff]eedback/,
-    "Needs-Modify": /\[[Pp]olicy\]\s+[Nn]eeds[\s-][Mm]odify/,
-    "Needs-Triage": /\[[Pp]olicy\]\s+[Nn]eeds[\s-][Tt]riage/,
-    "Policy-Accepted": /\[[Pp]olicy\]\s+[Pp]olicy[\s-][Aa]ccepted/,
-    "Policy-Modify": /\[[Pp]olicy\]\s+[Pp]olicy[\s-][Mm]odify/,
-    "Policy-Rejected": /\[[Pp]olicy\]\s+[Pp]olicy[\s-][Rr]ejected/,
-    "Policy-Remove": /\[[Pp]olicy\]\s+[Pp]olicy[\s-][Rr]emove/,
-    "Policy-Request": /\[[Pp]olicy\]\s+[Pp]olicy[\s-][Rr]equest/,
-    "Project-File": /\[[Pp]olicy\]\s+[Pp]roject[\s-][Ff]ile/,
-  },
-  remove: {
-    //  "Administrator-Approved": '\[[Pp]olicy\]\s+[Aa]dministrator[\s-][Aa]pproved]',
-    Announcement: /\[[Rr]emove\]\s+[Aa]nnouncement/,
-    "Blocking-issue": /\[[Rr]emove\]\s+[bB]locking[\s-][Ii]ssue/,
-    "Breaking-Change": /\[[Rr]emove\]\s+[Bb]reaking[\s-][Cc]hange/,
-    bug: /\[[Rr]emove\]\s+[Bb]ug/,
-    "Command-Execute": /\[[Rr]emove\]\s+[Cc]ommand[\s-][Ee]xecute/,
-    Commissions: /\[[Rr]emove\]\s+[Cc]ommissions/,
-    "Commissions-Member": /\[[Rr]emove\]\s+[Cc]ommissions[\s-][Mm]ember/,
-    "Commissions-Policy": /\[[Rr]emove\]\s+[Cc]ommissions[\s-][Pp]olicy/,
-    dependency: /\[[Rr]emove\]\s+[Dd]ependenc(y|ies)/,
-    "Do-Not-Merge": /\[[Rr]emove\]\s+[Dd]o[\s-][Nn]ot[\s-][Mm]erge/,
-    documentation: /\[[Rr]emove\]\s+[Dd]ocumentation/,
-    duplicate: /\[[Rr]emove\]\s+[Dd]uplicate/,
-    enhancement: /\[[Rr]emove\]\s+[Ee]nhancement/,
-    "good first issue": /\[[Rr]emove\]\s+[Gg]ood[\s-][Ff]irst[\s-][Ii]ssue/,
-    "help wanted": /\[[Rr]emove\]\s+[Hh]elp[\s-][Ww]anted/,
-    invalid: /\[[Rr]emove\]\s+[Ii]nvalid/,
-    "Member-Adding": /\[[Rr]emove\]\s+[Mm]ember[\s-][Aa]dding/,
-    //  "Member-Approved": /\[[Rr]emove\]\s+/,
-    "Merge-Needed": /\[[Rr]emove\]\s+[Mm]erge[\s-][Nn]eeded/,
-    "Needs-All-Approval": /\[[Rr]emove\]\s+[Nn]eeds[\s-][Aa]ll[\s-][Aa]pproval/,
-    "Needs-Author-Feedback":
-      /\[[Rr]emove\]\s+[Nn]eeds[\s-][Aa]uthor[\s-][Ff]eedback/,
-    "Needs-Modify": /\[[Rr]emove\]\s+[Nn]eeds[\s-][Mm]odify/,
-    "Needs-Triage": /\[[Rr]emove\]\s+[Nn]eeds[\s-][Tt]riage/,
-    "Policy-Accepted": /\[[Rr]emove\]\s+[Pp]olicy[\s-][Aa]ccepted/,
-    "Policy-Modify": /\[[Rr]emove\]\s+[Pp]olicy[\s-][Mm]odify/,
-    "Policy-Rejected": /\[[Rr]emove\]\s+[Pp]olicy[\s-][Rr]ejected/,
-    "Policy-Remove": /\[[Rr]emove\]\s+[Pp]olicy[\s-][Rr]emove/,
-    "Policy-Request": /\[[Rr]emove\]\s+[Pp]olicy[\s-][Rr]equest/,
-    "Project-File": /\[[Rr]emove\]\s+[Pp]roject[\s-][Ff]ile/,
-    "Review-Needed": /\[[Rr]emove\]\s+[Rr]eview[\s-][Nn]eeded/,
-  },
-};
 
 const special_operate: Special_operate = {
-  close_issue: {
+  close_issue_pr: {
     regex: /[Cc]lose[\s-][Ww]ith[\s-][Rr]eason:/,
     conditions: ["issue_comment"],
+    permission: 0,
     operate: async (number: number, owner: string, repo: string) => {
       return await api.rest.issues.update({
         repo: repo,
@@ -121,38 +51,28 @@ const special_operate: Special_operate = {
       });
     },
   },
-  close_pull_request: {
-    regex: /[Cc]lose[\s-][Ww]ith[\s-][Rr]eason:/,
-    conditions: ["pull_request_target"],
-    operate: async (number: number, owner: string, repo: string) => {
-      return await api.rest.pulls.update({
-        repo: repo,
-        owner: owner,
-        pull_number: number,
-        state: "closed",
-      });
-    },
-  },
 };
 
 export async function approved(pr_number: number, owner: string, repo: string) {
   const labelToAdd: string[] = [];
-  const review = (
+  const reviews = (
     await api.rest.pulls.listReviews({
       owner: owner,
       repo: repo,
       pull_number: pr_number,
     })
   ).data;
-  console.log(review);
-  review.forEach((obj) => {
-    switch (obj.state) {
+  reviews.forEach((review) => {
+    switch (review.state) {
       case "APPROVED":
-        if (Administrator.includes(obj.user.login)) {
-          labelToAdd.push("Administrator-Approved");
-        } else if (Member.includes(obj.user.login)) {
-          labelToAdd.push("Member-Approved");
-        }
+        data.members.forEach((member) => {
+          if (member.permission >= 1 && review.user.login === member.login) {
+            labelToAdd.push("Administrator-Approved");
+          }
+          if (member.permission === 0 && review.user.login === member.login) {
+            labelToAdd.push("Member-Approved");
+          }
+        });
         break;
     }
   });
@@ -184,27 +104,58 @@ export async function issue_comment(
       issue_number: pr_number,
     })
   ).data.map((label) => label.name);
-  let body = (
+  let res = (
     await api.rest.issues.getComment({
       repo: repo,
       owner: owner,
       comment_id: comment_id,
     })
-  ).data.body;
+  ).data;
   switch (action as Issue_Comment) {
     case "created":
-      Object.keys(labels_regex.add).forEach((key) => {
-        if (body.match(labels_regex.add[key])) {
+      Object.keys(data.labels_regex_add).forEach((key) => {
+        if (
+          res.body.match(data.labels_regex_add[key].regex) &&
+          data.members.filter((obj) => {
+            if (
+              obj.login === res.user.login &&
+              obj.permission >= data.labels_regex_remove[key].permission
+            ) {
+              return true;
+            }
+          })
+        ) {
           labelToAdd.push(key);
         }
       });
-      Object.keys(labels_regex.remove).forEach((key) => {
-        if (body.match(labels_regex.remove[key])) {
+      Object.keys(data.labels_regex_remove).forEach((key) => {
+        if (
+          res.body.match(data.labels_regex_remove[key].regex) &&
+          data.members.filter((obj) => {
+            if (
+              obj.login === res.user.login &&
+              obj.permission >= data.labels_regex_remove[key].permission
+            ) {
+              return true;
+            }
+          })
+        ) {
           labelToRemove.push(key);
         }
       });
       Object.values(special_operate).forEach(async (value) => {
-        if (body.match(value.regex) && value.conditions.includes(eventName)) {
+        if (
+          res.body.match(value.regex) &&
+          value.conditions.includes(eventName) &&
+          data.members.filter((obj) => {
+            if (
+              obj.login === res.user.login &&
+              obj.permission >= value.permission
+            ) {
+              return true;
+            }
+          })
+        ) {
           await value.operate(pr_number, owner, repo);
         }
       });
@@ -324,7 +275,7 @@ export async function pull_request_target(
 }
 
 (async () => {
-  const eventName = context.eventName as EventName
+  const eventName = context.eventName as EventName;
   switch (eventName) {
     case "pull_request_target":
       await pull_request_target(
