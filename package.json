@@ -1,0 +1,26 @@
+{
+  "name": "policy-work-team",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "post": "tsx scripts/post.ts",
+    "test": "vitest run -u",
+    "format": "prettier --cache --write **/*.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@actions/github": "^6.0.0",
+    "@colors/colors": "^1.6.0",
+    "@octokit/rest": "^20.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.6",
+    "prettier": "^3.0.3",
+    "tsx": "^3.13.0",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.11"
+  }
+}
