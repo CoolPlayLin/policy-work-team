@@ -97,6 +97,8 @@ const special_operate: Special_operate = {
 
 export async function approved(pr_number: number, owner: string, repo: string) {
   const labelToAdd: string[] = [];
+  const labelToRemove: string[] = [];
+  const Events: string[] = [];
   const reviews = (
     await api.rest.pulls.listReviews({
       owner: owner,
@@ -118,6 +120,40 @@ export async function approved(pr_number: number, owner: string, repo: string) {
         break;
     }
   });
+  if (
+    reviews.filter(
+      (review) =>
+        review.state === "APPROVED" &&
+        data.members.filter((member) => review.user.login === member.login && member.permission),
+    ).length >= 2
+  ) {
+    api.rest.pulls.createReview({
+      repo: repo,
+      owner: owner,
+      pull_number: pr_number,
+      state: "APPROVED",
+    });
+  } else {
+    if ((await api.rest.pulls.listRequestedReviewers({
+      owner: owner,
+      repo: repo,
+      pull_number: pr_number,
+    })).data.users.filter((user) => user.login === "coolplaylinbot")) {
+      await api.rest.pulls.createReview({
+        repo: repo,
+        owner: owner,
+        pull_number: pr_number,
+        body: "I don't want to approve this PR😅",
+      })
+    }
+  }
+  let labels = (
+    await api.rest.issues.listLabelsOnIssue({
+      repo: repo,
+      owner: owner,
+      issue_number: pr_number,
+    })
+  ).data.map((label) => label.name);
   // Apply Changes
   if (labelToAdd.length > 0) {
     await api.rest.issues.addLabels({
@@ -126,6 +162,26 @@ export async function approved(pr_number: number, owner: string, repo: string) {
       issue_number: pr_number,
       labels: labelToAdd,
     });
+  }
+  labelToRemove.forEach(async (label) => {
+    if (labels.includes(label)) {
+      await api.rest.issues.removeLabel({
+        owner: owner,
+        repo: repo,
+        issue_number: pr_number,
+        name: label,
+      });
+      Events.push(`Labels: ${label} was removed`);
+    } else {
+      Events.push(`Labels: ${label} wasn't removed because it hasn't included`);
+    }
+  });
+
+  console.log("Post Overview");
+  if (Events.length > 0) {
+    console.table(Events);
+  } else {
+    console.log("No events done");
   }
 }
 
@@ -233,9 +289,7 @@ export async function issue_comment(
 
   console.log("Post Overview");
   if (Events.length > 0) {
-    Events.forEach((event) => {
-      console.log(event);
-    });
+    console.table(Events);
   } else {
     console.log("No events done");
   }
@@ -332,9 +386,7 @@ export async function pull_request_target(
 
   console.log("Post Overview");
   if (Events.length > 0) {
-    Events.forEach((event) => {
-      console.log(event);
-    });
+    console.table(Events);
   } else {
     console.log("No events done");
   }
