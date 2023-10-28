@@ -124,7 +124,7 @@ export async function approved(pr_number: number, owner: string, repo: string) {
     reviews.filter(
       (review) =>
         review.state === "APPROVED" &&
-        data.members.filter((member) => review.user.login === member.login && member.permission),
+        data.members.filter((member) => review.user.login === member.login),
     ).length >= 2
   ) {
     api.rest.pulls.createReview({
